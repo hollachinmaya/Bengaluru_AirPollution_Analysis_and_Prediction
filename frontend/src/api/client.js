@@ -3,7 +3,7 @@ import axios from 'axios'
 
 const api = axios.create({
   baseURL: '/api',
-  timeout: 120000, // 2 min — CNN-LSTM training can take a while
+  timeout: 300000, // 5 min — CNN-LSTM training safety window
 })
 
 // ── Overview ──────────────────────────────────────────────────────────────────

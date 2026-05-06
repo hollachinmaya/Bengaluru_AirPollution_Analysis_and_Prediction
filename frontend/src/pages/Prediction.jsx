@@ -28,8 +28,8 @@ const TIP = ({ active, payload, label }) => {
 // Architecture layer diagram
 function ArchDiagram({ arch }) {
   const layers = arch?.layers || []
-  const icons = { input: '→', conv: '⊕', pool: '↓', dense: '●', output: '★' }
-  const colors = { input: '#4a6a8a', conv: '#00c8ff', pool: '#39ff8e', dense: '#b06dff', output: '#ff6b2b' }
+  const icons = { input: '→', conv: '⊕', pool: '↓', lstm: '↺', dense: '●', output: '★' }
+  const colors = { input: '#4a6a8a', conv: '#00c8ff', pool: '#39ff8e', lstm: '#b06dff', dense: '#b06dff', output: '#ff6b2b' }
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0, flexWrap: 'wrap', padding: '16px 0' }}>
       {layers.map((l, i) => (
@@ -110,11 +110,12 @@ export default function Prediction() {
         {!data && (
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
             {[
-              ['Input (batch,7,9)', '#4a6a8a'],
+              ['Input (batch,14,9)', '#4a6a8a'],
               ['Conv1D(32,k=3,ReLU)', '#00c8ff'],
               ['Conv1D(32,k=3,ReLU)', '#00c8ff'],
-              ['GlobalAvgPool', '#39ff8e'],
-              ['Dense(32,ReLU)', '#b06dff'],
+              ['BatchNorm', '#39ff8e'],
+              ['LSTM(32,seq=True)', '#b06dff'],
+              ['LSTM(32)', '#b06dff'],
               ['Dense(1)', '#ff6b2b'],
             ].map(([label, color], i, arr) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -146,8 +147,8 @@ export default function Prediction() {
       {data && (
         <>
           {/* Model comparison cards */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14, marginBottom: 18 }}>
-            {['CNN-LSTM','Random Forest','Linear Regression'].map(m => (
+          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 350px)', gap: 14, marginBottom: 18 }}>
+            {['CNN-LSTM'].map(m => (
               <ModelCard key={m} name={m} metrics={data.metrics[m]} selected={selected === m} onSelect={() => setSelected(m)} />
             ))}
           </div>
@@ -204,15 +205,17 @@ export default function Prediction() {
 
             {/* Feature importance */}
             <Card>
-              <CardHeader title="Feature Importance (RF)" badge="Top 8 Predictors" badgeColor="purple" />
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingTop: 6 }}>
-                {data.feature_importance.map(([name, val]) => (
+              <CardHeader title="Input Features" badge="CNN-LSTM Inputs" badgeColor="purple" />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingTop: 6 }}>
+                {data.architecture?.features?.map((name) => (
                   <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div style={{ fontSize: 11, color: 'var(--text2)', width: 80, flexShrink: 0, fontFamily: 'Space Mono, monospace' }}>{featNames[name] || name}</div>
-                    <div style={{ flex: 1, height: 8, background: 'rgba(255,255,255,0.06)', borderRadius: 4, overflow: 'hidden' }}>
-                      <div style={{ height: '100%', borderRadius: 4, width: `${(val / maxFI * 100).toFixed(1)}%`, background: 'linear-gradient(90deg,var(--accent),var(--accent4))', transition: 'width .6s ease' }} />
-                    </div>
-                    <div style={{ fontSize: 11, color: 'var(--text3)', fontFamily: 'Space Mono, monospace', width: 45, textAlign: 'right' }}>{(val * 100).toFixed(1)}%</div>
+                    <div style={{ fontSize: 11, color: 'var(--text2)', flex: 1, fontFamily: 'Space Mono, monospace' }}>{name}</div>
+                    <div style={{ fontSize: 10, color: 'var(--accent)', background: 'rgba(0,200,255,0.08)', borderRadius: 4, padding: '2px 8px' }}>active</div>
+                  </div>
+                )) || FEATURES?.map(name => (
+                  <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{ fontSize: 11, color: 'var(--text2)', flex: 1, fontFamily: 'Space Mono, monospace' }}>{name}</div>
+                    <div style={{ fontSize: 10, color: 'var(--accent)', background: 'rgba(0,200,255,0.08)', borderRadius: 4, padding: '2px 8px' }}>active</div>
                   </div>
                 ))}
               </div>

@@ -3,7 +3,7 @@ import { useApi } from '../hooks/useApi'
 import { fetchOverview } from '../api/client'
 import { aqiColor, aqiLabel } from '../utils/aqi'
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
   RadarChart, Radar, PolarGrid, PolarAngleAxis, Cell
 } from 'recharts'
 import { Card, CardHeader, StatCard, AqiBadge, SectionHeader, Spinner, ErrorBox, InsightBox } from '../components/UI'
@@ -31,11 +31,12 @@ export default function Overview() {
 
   const { hotspot, pollutants } = data
 
+  const reversedHotspot = [...hotspot].reverse()
   const pollutantChartData = pollutants.map(p => ({
     station: p.Station,
     'PM2.5': +p.PM2_5.toFixed(1),
-    'PM10':  +p.PM10.toFixed(1),
     'NO2':   +p.NO2.toFixed(1),
+    'SO2':   +p.SO2.toFixed(1),
   }))
 
   return (
@@ -81,12 +82,12 @@ export default function Overview() {
         <Card>
           <CardHeader title="Station AQI Ranking" badge="PM2.5 Based" badgeColor="orange" />
           <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={[...hotspot].reverse()} layout="vertical" margin={{ left: 10, right: 20 }}>
+            <BarChart data={reversedHotspot} layout="vertical" margin={{ left: 10, right: 20 }}>
               <XAxis type="number" tick={{ fill: 'var(--text2)', fontSize: 11 }} />
               <YAxis type="category" dataKey="station" width={110} tick={{ fill: 'var(--text2)', fontSize: 11 }} />
               <Tooltip content={<CUSTOM_TOOLTIP />} />
               <Bar dataKey="mean_aqi" name="Mean AQI" radius={[0, 5, 5, 0]}>
-                {hotspot.map((h, i) => (
+                {reversedHotspot.map((h, i) => (
                   <Cell key={i} fill={aqiColor(h.mean_aqi)} />
                 ))}
               </Bar>
@@ -102,9 +103,10 @@ export default function Overview() {
               <XAxis dataKey="station" tick={{ fill: 'var(--text2)', fontSize: 9 }} angle={-25} textAnchor="end" />
               <YAxis tick={{ fill: 'var(--text2)', fontSize: 11 }} />
               <Tooltip content={<CUSTOM_TOOLTIP />} />
+              <Legend wrapperStyle={{ fontSize: 11, color: 'var(--text2)' }} />
               <Bar dataKey="PM2.5" fill="rgba(0,200,255,0.8)"   radius={[3,3,0,0]} />
-              <Bar dataKey="PM10"  fill="rgba(176,109,255,0.8)" radius={[3,3,0,0]} />
               <Bar dataKey="NO2"   fill="rgba(255,107,43,0.8)"  radius={[3,3,0,0]} />
+              <Bar dataKey="SO2"   fill="rgba(176,109,255,0.8)" radius={[3,3,0,0]} />
             </BarChart>
           </ResponsiveContainer>
         </Card>

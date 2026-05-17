@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { useApi } from '../hooks/useApi'
 import { fetchHotspots, fetchPollutantProfile } from '../api/client'
-import { aqiColor } from '../utils/aqi'
+import { aqiColor, POLLUTANT_OPTIONS, pollutantColor, pollutantLabel } from '../utils/aqi'
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, Cell, ResponsiveContainer,
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis
@@ -23,7 +23,36 @@ const TIP = ({ active, payload, label }) => {
   )
 }
 
-function BangaloreMap({ hotspots }) {
+// Shared pollutant pill selector
+function PollutantSelector({ value, onChange }) {
+  return (
+    <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+      <span style={{ fontSize: 11, color: 'var(--text3)', fontFamily: 'Space Mono, monospace', letterSpacing: 1, textTransform: 'uppercase' }}>Pollutant:</span>
+      {POLLUTANT_OPTIONS.map(opt => (
+        <button
+          key={opt.value}
+          onClick={() => onChange(opt.value)}
+          style={{
+            padding: '5px 14px',
+            borderRadius: 20,
+            border: `1.5px solid ${value === opt.value ? opt.color : 'rgba(255,255,255,0.1)'}`,
+            background: value === opt.value ? opt.color + '22' : 'transparent',
+            color: value === opt.value ? opt.color : 'var(--text2)',
+            fontSize: 12,
+            fontFamily: 'Space Mono, monospace',
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+            fontWeight: value === opt.value ? 700 : 400,
+          }}
+        >
+          {opt.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+function BangaloreMap({ hotspots, pColor }) {
   const latMin = 12.85, latMax = 13.08, lonMin = 77.47, lonMax = 77.72
   const W = 500, H = 380
   const toX = lon => ((lon - lonMin) / (lonMax - lonMin)) * (W - 80) + 40
@@ -52,7 +81,7 @@ function BangaloreMap({ hotspots }) {
       <polygon points="472,35 468,46 476,46" fill="rgba(0,200,255,0.5)" />
       {hotspots.map(h => {
         const x = toX(h.lon), y = toY(h.lat)
-        const r = 10 + Math.max(0, (h.mean_aqi - 70) / 4)
+        const r = 10 + Math.max(0, (h.mean_aqi - 20) / 4)
         const clr = aqiColor(h.mean_aqi)
         const isH = hovered === h.station
         return (
@@ -66,9 +95,9 @@ function BangaloreMap({ hotspots }) {
             <text x={x} y={y + r + 14} textAnchor="middle" fill={clr} fontSize="9" fontFamily="DM Sans" fontWeight="600">{h.station}</text>
             {isH && (
               <g>
-                <rect x={x - 50} y={y - r - 42} width={100} height={34} rx="5" fill="rgba(5,10,20,0.95)" stroke={clr} strokeWidth="1" />
-                <text x={x} y={y - r - 26} textAnchor="middle" fill={clr} fontSize="11" fontFamily="Space Mono" fontWeight="700">{h.station}</text>
-                <text x={x} y={y - r - 14} textAnchor="middle" fill="var(--text2)" fontSize="10" fontFamily="DM Sans">AQI {h.mean_aqi} · {h.zone}</text>
+                <rect x={x - 55} y={y - r - 46} width={110} height={38} rx="5" fill="rgba(5,10,20,0.95)" stroke={clr} strokeWidth="1" />
+                <text x={x} y={y - r - 30} textAnchor="middle" fill={clr} fontSize="11" fontFamily="Space Mono" fontWeight="700">{h.station}</text>
+                <text x={x} y={y - r - 16} textAnchor="middle" fill="var(--text2)" fontSize="10" fontFamily="DM Sans">AQI {h.mean_aqi} · {h.zone}</text>
               </g>
             )}
           </g>
@@ -79,12 +108,17 @@ function BangaloreMap({ hotspots }) {
 }
 
 export default function Spatial() {
-  const { data: hotspots, loading, error } = useApi(fetchHotspots)
+  const [pollutant, setPollutant]     = useState('PM2_5_AQI')
   const [radarStation, setRadarStation] = useState('BapujiNagar')
+
+  const { data: hotspots, loading, error } = useApi(() => fetchHotspots(pollutant), [pollutant])
   const { data: profile, loading: profLoading } = useApi(() => fetchPollutantProfile(radarStation), [radarStation])
 
   if (loading) return <Spinner label="Detecting hotspots…" />
   if (error)   return <ErrorBox message={error} />
+
+  const pColor = pollutantColor(pollutant)
+  const pLabel = pollutantLabel(pollutant)
 
   const sorted = [...(hotspots || [])].sort((a, b) => b.mean_aqi - a.mean_aqi)
   const radarData = profile ? [
@@ -104,11 +138,16 @@ export default function Spatial() {
     <div className="fade-in" style={{ padding: 28, maxWidth: 1400 }}>
       <SectionHeader tag="SPATIAL ANALYSIS" title="Hotspot Detection" desc="Long-term spatial aggregation identifying structural hotspots and cold spots across Bangalore's urban morphology." />
 
+      {/* Pollutant Selector */}
+      <div style={{ marginBottom: 18, padding: '12px 18px', background: 'rgba(0,200,255,0.04)', borderRadius: 10, border: '1px solid rgba(0,200,255,0.1)' }}>
+        <PollutantSelector value={pollutant} onChange={setPollutant} />
+      </div>
+
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.6fr', gap: 18, marginBottom: 18 }}>
         {/* Map */}
         <Card>
-          <CardHeader title="Station Map" badge="Hotspot Detection" badgeColor="orange" />
-          <BangaloreMap hotspots={sorted} />
+          <CardHeader title={`Station Map — ${pLabel}`} badge="Hotspot Detection" badgeColor="orange" />
+          <BangaloreMap hotspots={sorted} pColor={pColor} />
           <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginTop: 12 }}>
             {[['#cc2a36','Hotspot (>100)'],['#f5d020','Moderate (75–100)'],['#39ff8e','Cold Spot (<75)']].map(([c, l]) => (
               <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--text2)' }}>
@@ -121,27 +160,27 @@ export default function Spatial() {
 
         {/* Bar ranking */}
         <Card>
-          <CardHeader title="Mean AQI by Station (2019–2024)" badge="Ranked" badgeColor="blue" />
+          <CardHeader title={`Mean ${pLabel} by Station (2019–2024)`} badge="Ranked" badgeColor="blue" />
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={sorted} margin={{ left: 10, right: 20 }}>
               <XAxis dataKey="station" tick={{ fill: 'var(--text2)', fontSize: 10 }} angle={-20} textAnchor="end" />
-              <YAxis tick={{ fill: 'var(--text2)', fontSize: 11 }} domain={[0, 130]} />
+              <YAxis tick={{ fill: 'var(--text2)', fontSize: 11 }} />
               <Tooltip content={<TIP />} />
-              <Bar dataKey="mean_aqi" name="Mean AQI" radius={[5,5,0,0]}>
+              <Bar dataKey="mean_aqi" name={`Mean ${pLabel}`} radius={[5,5,0,0]}>
                 {sorted.map((h, i) => <Cell key={i} fill={aqiColor(h.mean_aqi)} />)}
               </Bar>
             </BarChart>
           </ResponsiveContainer>
-          <InsightBox accent="var(--accent)">
+          <InsightBox accent={pColor}>
             🔴 <b>Hotspots:</b> {top3} &nbsp;|&nbsp; 🟢 <b>Cold Spots:</b> {bottom2}
           </InsightBox>
         </Card>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 }}>
-        {/* Radar */}
+        {/* Radar — always shows all 7 raw pollutants, no filter needed */}
         <Card>
-          <CardHeader title="Pollutant Profile" badge="Radar" badgeColor="green" />
+          <CardHeader title="Pollutant Profile" badge="Radar · All Pollutants" badgeColor="green" />
           <Select label="Station:" value={radarStation} onChange={setRadarStation} options={STATIONS} />
           <div style={{ marginTop: 16 }}>
             {profLoading ? <Spinner label="Loading profile…" /> : (
@@ -157,15 +196,15 @@ export default function Spatial() {
           </div>
         </Card>
 
-        {/* Max AQI */}
+        {/* Max AQI extremes */}
         <Card>
-          <CardHeader title="Max AQI Events" badge="Extremes" badgeColor="orange" />
+          <CardHeader title={`Max ${pLabel} Events`} badge="Extremes" badgeColor="orange" />
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={sorted} margin={{ bottom: 20 }}>
               <XAxis dataKey="station" tick={{ fill: 'var(--text2)', fontSize: 10 }} angle={-20} textAnchor="end" />
               <YAxis tick={{ fill: 'var(--text2)', fontSize: 11 }} />
               <Tooltip content={<TIP />} />
-              <Bar dataKey="max_aqi" name="Max AQI" fill="rgba(204,42,54,0.75)" radius={[4,4,0,0]} />
+              <Bar dataKey="max_aqi" name={`Max ${pLabel}`} fill="rgba(204,42,54,0.75)" radius={[4,4,0,0]} />
               <Bar dataKey="std_aqi" name="Std Dev" fill="rgba(176,109,255,0.6)" radius={[4,4,0,0]} />
             </BarChart>
           </ResponsiveContainer>

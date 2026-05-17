@@ -12,6 +12,22 @@ export const STATIONS = [
 
 export const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
 
+export const POLLUTANT_OPTIONS = [
+  { value: 'PM2_5_AQI', label: 'PM2.5 AQI', unit: 'AQI', color: '#00c8ff' },
+  { value: 'SO2_AQI',   label: 'SO₂ AQI',   unit: 'AQI', color: '#b06dff' },
+  { value: 'NO2_AQI',   label: 'NO₂ AQI',   unit: 'AQI', color: '#ff6b2b' },
+]
+
+export function pollutantColor(key) {
+  const found = POLLUTANT_OPTIONS.find(p => p.value === key)
+  return found ? found.color : '#00c8ff'
+}
+
+export function pollutantLabel(key) {
+  const found = POLLUTANT_OPTIONS.find(p => p.value === key)
+  return found ? found.label : key
+}
+
 export function aqiColor(aqi) {
   if (aqi <= 50)  return '#2dff9e'
   if (aqi <= 100) return '#ffe156'

@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { useApi } from '../hooks/useApi'
 import { fetchMonthlyAll, fetchMonthlyStation, fetchYoY, fetchVolatility } from '../api/client'
-import { STATIONS, STATION_COLORS, stationColor } from '../utils/aqi'
+import { STATIONS, STATION_COLORS, stationColor, POLLUTANT_OPTIONS, pollutantColor, pollutantLabel } from '../utils/aqi'
 import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip,
   CartesianGrid, Legend, ResponsiveContainer, ReferenceLine, Cell
@@ -23,16 +23,48 @@ const TIP = ({ active, payload, label }) => {
   )
 }
 
-export default function TimeSeries() {
-  const [mode, setMode] = useState('all')
-  const [selStation, setSelStation] = useState('BapujiNagar')
+// Shared pollutant pill selector component
+function PollutantSelector({ value, onChange }) {
+  return (
+    <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+      <span style={{ fontSize: 11, color: 'var(--text3)', fontFamily: 'Space Mono, monospace', letterSpacing: 1, textTransform: 'uppercase' }}>Pollutant:</span>
+      {POLLUTANT_OPTIONS.map(opt => (
+        <button
+          key={opt.value}
+          onClick={() => onChange(opt.value)}
+          style={{
+            padding: '5px 14px',
+            borderRadius: 20,
+            border: `1.5px solid ${value === opt.value ? opt.color : 'rgba(255,255,255,0.1)'}`,
+            background: value === opt.value ? opt.color + '22' : 'transparent',
+            color: value === opt.value ? opt.color : 'var(--text2)',
+            fontSize: 12,
+            fontFamily: 'Space Mono, monospace',
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+            fontWeight: value === opt.value ? 700 : 400,
+          }}
+        >
+          {opt.label}
+        </button>
+      ))}
+    </div>
+  )
+}
 
-  const { data: allMonthly,     loading: l1 } = useApi(fetchMonthlyAll)
-  const { data: stationMonthly, loading: l2 } = useApi(() => fetchMonthlyStation(selStation), [selStation])
-  const { data: yoy,            loading: l3 } = useApi(fetchYoY)
-  const { data: vol,            loading: l4 } = useApi(fetchVolatility)
+export default function TimeSeries() {
+  const [mode, setMode]         = useState('all')
+  const [selStation, setSelStation] = useState('BapujiNagar')
+  const [pollutant, setPollutant]   = useState('PM2_5_AQI')
+
+  const { data: allMonthly,     loading: l1 } = useApi(() => fetchMonthlyAll(pollutant),           [pollutant])
+  const { data: stationMonthly, loading: l2 } = useApi(() => fetchMonthlyStation(selStation, pollutant), [selStation, pollutant])
+  const { data: yoy,            loading: l3 } = useApi(() => fetchYoY(pollutant),                  [pollutant])
+  const { data: vol,            loading: l4 } = useApi(() => fetchVolatility(pollutant),           [pollutant])
 
   const loading = l1 || l3 || l4
+  const pColor  = pollutantColor(pollutant)
+  const pLabel  = pollutantLabel(pollutant)
 
   // Build all-stations pivot for multi-line chart
   const allPivot = (() => {
@@ -58,8 +90,13 @@ export default function TimeSeries() {
 
   return (
     <div className="fade-in" style={{ padding: 28, maxWidth: 1400 }}>
-      <SectionHeader tag="TIME SERIES EXPLORER" title="Monthly AQI Trends"
+      <SectionHeader tag="TIME SERIES EXPLORER" title="Monthly Trends"
         desc="Monthly-aggregated trajectories revealing long-term pollution dynamics and inter-zone divergence patterns (2019–2024)." />
+
+      {/* Pollutant Selector */}
+      <div style={{ marginBottom: 18, padding: '12px 18px', background: 'rgba(0,200,255,0.04)', borderRadius: 10, border: '1px solid rgba(0,200,255,0.1)' }}>
+        <PollutantSelector value={pollutant} onChange={setPollutant} />
+      </div>
 
       {/* Mode toggle */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 18, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -73,7 +110,9 @@ export default function TimeSeries() {
       {/* Main time series */}
       <Card style={{ marginBottom: 18 }}>
         <CardHeader
-          title={mode === 'all' ? 'All Stations — Monthly AQI (2019–2024)' : `${selStation} — Monthly AQI (2019–2024)`}
+          title={mode === 'all'
+            ? `All Stations — Monthly ${pLabel} (2019–2024)`
+            : `${selStation} — Monthly ${pLabel} (2019–2024)`}
           badge="COVID-19 Dip Visible (2020)"
           badgeColor="blue"
         />
@@ -82,7 +121,7 @@ export default function TimeSeries() {
             <LineChart data={allPivot} margin={{ right: 20 }}>
               <CartesianGrid stroke="rgba(0,200,255,0.04)" />
               <XAxis dataKey="month" tick={{ fill: 'var(--text2)', fontSize: 9 }} tickCount={24} angle={-35} textAnchor="end" height={50} />
-              <YAxis tick={{ fill: 'var(--text2)', fontSize: 11 }} label={{ value: 'PM2.5 AQI', angle: -90, position: 'insideLeft', fill: 'var(--text2)', fontSize: 11 }} />
+              <YAxis tick={{ fill: 'var(--text2)', fontSize: 11 }} label={{ value: pLabel, angle: -90, position: 'insideLeft', fill: 'var(--text2)', fontSize: 11 }} />
               <Tooltip content={<TIP />} />
               <Legend wrapperStyle={{ fontSize: 10, color: 'var(--text2)' }} />
               <ReferenceLine x="2020-04" stroke="rgba(255,107,43,0.35)" strokeDasharray="5,4" label={{ value: 'Lockdown', fill: '#ff6b2b', fontSize: 9 }} />
@@ -101,7 +140,7 @@ export default function TimeSeries() {
                 <YAxis tick={{ fill: 'var(--text2)', fontSize: 11 }} />
                 <Tooltip content={<TIP />} />
                 <ReferenceLine x="2020-04" stroke="rgba(255,107,43,0.35)" strokeDasharray="5,4" label={{ value: 'Lockdown', fill: '#ff6b2b', fontSize: 9 }} />
-                <Line dataKey="aqi" name={selStation} stroke={stationColor(selStation)} strokeWidth={2.5} dot={false} />
+                <Line dataKey="aqi" name={`${selStation} — ${pLabel}`} stroke={pColor} strokeWidth={2.5} dot={false} />
               </LineChart>
             </ResponsiveContainer>
           )
@@ -111,12 +150,12 @@ export default function TimeSeries() {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 }}>
         {/* YoY change */}
         <Card>
-          <CardHeader title="Year-over-Year Δ AQI" badge="Change Analysis" badgeColor="orange" />
+          <CardHeader title={`Year-over-Year Δ ${pLabel}`} badge="Change Analysis" badgeColor="orange" />
           <ResponsiveContainer width="100%" height={260}>
             <LineChart data={yoyPivot} margin={{ right: 20 }}>
               <CartesianGrid stroke="rgba(0,200,255,0.05)" />
               <XAxis dataKey="year" tick={{ fill: 'var(--text2)', fontSize: 12 }} />
-              <YAxis tick={{ fill: 'var(--text2)', fontSize: 11 }} label={{ value: 'ΔAQI', angle: -90, position: 'insideLeft', fill: 'var(--text2)', fontSize: 11 }} />
+              <YAxis tick={{ fill: 'var(--text2)', fontSize: 11 }} label={{ value: `Δ ${pLabel}`, angle: -90, position: 'insideLeft', fill: 'var(--text2)', fontSize: 10 }} />
               <Tooltip content={<TIP />} />
               <Legend wrapperStyle={{ fontSize: 10 }} />
               <ReferenceLine y={0} stroke="rgba(255,255,255,0.2)" strokeDasharray="4,3" />
@@ -130,7 +169,7 @@ export default function TimeSeries() {
 
         {/* Volatility */}
         <Card>
-          <CardHeader title="Station AQI Volatility" badge="Std Deviation" badgeColor="purple" />
+          <CardHeader title={`Station ${pLabel} Volatility`} badge="Std Deviation" badgeColor="purple" />
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={vol} layout="vertical" margin={{ left: 10, right: 20 }}>
               <XAxis type="number" tick={{ fill: 'var(--text2)', fontSize: 11 }} />
@@ -138,7 +177,7 @@ export default function TimeSeries() {
               <Tooltip formatter={v => [v.toFixed(1), 'Std Dev']} contentStyle={{ background: 'rgba(5,10,20,0.95)', border: '1px solid rgba(0,200,255,0.2)', borderRadius: 8, fontSize: 12 }} />
               <Bar dataKey="std_aqi" name="Std Dev" radius={[0,5,5,0]}>
                 {(vol || []).map((d, i) => (
-                  <Cell key={i} fill={STATION_COLORS[STATIONS.indexOf(d.station)] || '#00c8ff'} />
+                  <Cell key={i} fill={STATION_COLORS[STATIONS.indexOf(d.station)] || pColor} />
                 ))}
               </Bar>
             </BarChart>

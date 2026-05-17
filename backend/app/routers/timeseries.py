@@ -1,19 +1,21 @@
 """
 app/routers/timeseries.py
 Monthly time-series, year-over-year change, and volatility endpoints.
+Supports ?pollutant=PM2_5_AQI|SO2_AQI|NO2_AQI on all endpoints.
 """
-from fastapi import APIRouter
-from app.core import load_df
+from fastapi import APIRouter, Query
+from app.core import load_df, resolve_pollutant
 
 router = APIRouter()
 
 
 @router.get("/monthly")
-def get_monthly_all():
+def get_monthly_all(pollutant: str = Query(default="PM2_5_AQI")):
+    col = resolve_pollutant(pollutant)
     df = load_df()
     df["month_key"] = df["Timestamp"].dt.to_period("M").astype(str)
     monthly = (
-        df.groupby(["month_key", "Station"])["PM2_5_AQI"]
+        df.groupby(["month_key", "Station"])[col]
         .mean()
         .round(2)
         .reset_index()
@@ -23,12 +25,13 @@ def get_monthly_all():
 
 
 @router.get("/monthly/{station}")
-def get_monthly_station(station: str):
+def get_monthly_station(station: str, pollutant: str = Query(default="PM2_5_AQI")):
+    col = resolve_pollutant(pollutant)
     df = load_df()
     sdf = df[df["Station"] == station].copy()
     sdf["month_key"] = sdf["Timestamp"].dt.to_period("M").astype(str)
     monthly = (
-        sdf.groupby("month_key")["PM2_5_AQI"]
+        sdf.groupby("month_key")[col]
         .mean()
         .round(2)
         .reset_index()
@@ -38,16 +41,16 @@ def get_monthly_station(station: str):
 
 
 @router.get("/yoy")
-def get_year_over_year():
+def get_year_over_year(pollutant: str = Query(default="PM2_5_AQI")):
+    col = resolve_pollutant(pollutant)
     df = load_df()
     yearly = (
-        df.groupby(["Year", "Station"])["PM2_5_AQI"]
+        df.groupby(["Year", "Station"])[col]
         .mean()
         .round(2)
         .reset_index()
     )
     yearly.columns = ["year", "station", "mean_aqi"]
-    stations = yearly["Station"].unique() if "Station" in yearly.columns else yearly["station"].unique()
     years = sorted(yearly["year"].unique())
     result = []
     for s in yearly["station"].unique():
@@ -65,14 +68,15 @@ def get_year_over_year():
 
 
 @router.get("/volatility")
-def get_volatility():
+def get_volatility(pollutant: str = Query(default="PM2_5_AQI")):
+    col = resolve_pollutant(pollutant)
     df = load_df()
     vol = (
-        df.groupby("Station")["PM2_5_AQI"]
+        df.groupby("Station")[col]
         .std()
         .round(2)
         .reset_index()
-        .sort_values("PM2_5_AQI", ascending=False)
+        .sort_values(col, ascending=False)
     )
     vol.columns = ["station", "std_aqi"]
     return vol.to_dict(orient="records")

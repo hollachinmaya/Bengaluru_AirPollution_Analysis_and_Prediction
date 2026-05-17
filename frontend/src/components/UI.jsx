@@ -27,11 +27,11 @@ export function Card({ children, className = '', style = {}, accentColor }) {
 /* ── CardHeader ─────────────────────────────────────────────────────────────── */
 export function CardHeader({ title, badge, badgeColor = 'blue' }) {
   const colors = {
-    blue:   { bg: 'rgba(0,212,255,0.08)',   border: 'rgba(0,212,255,0.2)',   text: '#00d4ff' },
-    orange: { bg: 'rgba(255,94,58,0.08)',   border: 'rgba(255,94,58,0.22)',  text: '#ff5e3a' },
-    green:  { bg: 'rgba(45,255,158,0.08)',  border: 'rgba(45,255,158,0.22)', text: '#2dff9e' },
-    purple: { bg: 'rgba(196,126,255,0.08)', border: 'rgba(196,126,255,0.22)',text: '#c47eff' },
-    yellow: { bg: 'rgba(255,225,86,0.08)',  border: 'rgba(255,225,86,0.22)', text: '#ffe156' },
+    blue:   { bg: 'rgba(52,211,120,0.08)',  border: 'rgba(52,211,120,0.22)', text: '#34d378' },
+    orange: { bg: 'rgba(245,158,11,0.08)',  border: 'rgba(245,158,11,0.22)', text: '#f59e0b' },
+    green:  { bg: 'rgba(16,185,129,0.08)',  border: 'rgba(16,185,129,0.22)', text: '#10b981' },
+    purple: { bg: 'rgba(251,191,36,0.08)',  border: 'rgba(251,191,36,0.22)', text: '#fbbf24' },
+    yellow: { bg: 'rgba(110,231,183,0.08)', border: 'rgba(110,231,183,0.22)',text: '#6ee7b7' },
   }
   const c = colors[badgeColor] || colors.blue
   return (
@@ -146,8 +146,8 @@ export function Select({ value, onChange, options, label }) {
         value={value}
         onChange={e => onChange(e.target.value)}
         style={{
-          background: 'rgba(8,18,38,0.9)',
-          border: '1px solid rgba(0,212,255,0.2)',
+          background: 'rgba(4,14,8,0.92)',
+          border: '1px solid rgba(52,211,120,0.20)',
           color: 'var(--text)',
           padding: '8px 14px', borderRadius: 9,
           fontSize: 13, fontFamily: 'Inter, sans-serif',
@@ -156,8 +156,8 @@ export function Select({ value, onChange, options, label }) {
           outline: 'none',
           transition: 'border-color 0.2s',
         }}
-        onFocus={e => e.target.style.borderColor = 'rgba(0,212,255,0.5)'}
-        onBlur={ e => e.target.style.borderColor = 'rgba(0,212,255,0.2)'}
+        onFocus={e => e.target.style.borderColor = 'rgba(52,211,120,0.5)'}
+        onBlur={ e => e.target.style.borderColor = 'rgba(52,211,120,0.2)'}
       >
         {options.map(o => (
           <option key={o.value ?? o} value={o.value ?? o}>{o.label ?? o}</option>
@@ -195,7 +195,7 @@ function aqiLabelHelper(aqi) {
 export function InsightBox({ children, accent = 'var(--accent)' }) {
   return (
     <div style={{
-      background: 'rgba(0,212,255,0.04)', borderRadius: 10,
+      background: 'rgba(52,211,120,0.04)', borderRadius: 10,
       borderLeft: `3px solid ${accent}`,
       padding: '11px 16px', fontSize: 12, color: 'var(--text2)',
       marginTop: 14, lineHeight: 1.75,
@@ -221,7 +221,7 @@ export function SectionHeader({ tag, title, desc }) {
         fontSize: 24, fontWeight: 800, color: 'var(--text)',
         fontFamily: 'Rajdhani, Inter, sans-serif',
         letterSpacing: 0.5,
-        background: 'linear-gradient(90deg, var(--text), rgba(0,212,255,0.7))',
+        background: 'linear-gradient(90deg, var(--text), rgba(52,211,120,0.75))',
         WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
       }}>
         {title}
@@ -245,13 +245,13 @@ export function TabBtn({ active, onClick, children }) {
         padding: '7px 16px', borderRadius: 8, fontSize: 12,
         fontFamily: 'Space Mono, monospace', cursor: 'pointer',
         border: '1px solid',
-        borderColor: active ? 'rgba(0,212,255,0.35)' : 'rgba(0,180,255,0.1)',
-        background: active ? 'rgba(0,212,255,0.1)' : 'rgba(0,180,255,0.03)',
+        borderColor: active ? 'rgba(52,211,120,0.35)' : 'rgba(52,211,120,0.10)',
+        background: active ? 'rgba(52,211,120,0.10)' : 'rgba(52,211,120,0.02)',
         color: active ? 'var(--accent)' : 'var(--text3)',
         transition: 'all 0.2s',
         backdropFilter: 'blur(12px)',
         letterSpacing: 0.5,
-        boxShadow: active ? '0 0 14px rgba(0,212,255,0.12)' : 'none',
+        boxShadow: active ? '0 0 14px rgba(52,211,120,0.14)' : 'none',
       }}
     >
       {children}

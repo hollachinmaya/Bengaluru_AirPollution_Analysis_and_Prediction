@@ -1,18 +1,20 @@
 """
 app/routers/spatial.py
 Spatial hotspot detection endpoints.
+Supports ?pollutant=PM2_5_AQI|SO2_AQI|NO2_AQI on the hotspots endpoint.
 """
-from fastapi import APIRouter
-from app.core import load_df, STATION_COORDS, ZONE_TYPES, aqi_label
+from fastapi import APIRouter, Query
+from app.core import load_df, STATION_COORDS, ZONE_TYPES, aqi_label, resolve_pollutant
 
 router = APIRouter()
 
 
 @router.get("/hotspots")
-def get_hotspots():
+def get_hotspots(pollutant: str = Query(default="PM2_5_AQI")):
+    col = resolve_pollutant(pollutant)
     df = load_df()
     hotspot = (
-        df.groupby("Station")["PM2_5_AQI"]
+        df.groupby("Station")[col]
         .agg(mean="mean", std="std", max="max", min="min")
         .round(2)
         .reset_index()
@@ -31,6 +33,7 @@ def get_hotspots():
             "lon":       STATION_COORDS.get(s, [0, 0])[1],
             "zone":      ZONE_TYPES.get(s, "Mixed"),
             "aqi_label": aqi_label(row["mean"]),
+            "pollutant": pollutant,
         })
     return result
 

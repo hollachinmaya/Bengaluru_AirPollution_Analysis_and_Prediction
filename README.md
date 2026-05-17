@@ -194,8 +194,8 @@ Dense (output) ──► PM2.5 AQI prediction (next-day)
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/hollachinmaya/Bengaluru_AirPollution_Analysis_and_Prediction.git
-cd Bengaluru_AirPollution_Analysis_and_Prediction
+git clone https://github.com/hollachinmaya/Spatio-Temporal-Analysis-and-Prediction-Bengaluru.git
+cd Spatio-Temporal-Analysis-and-Prediction-Bengaluru
 ```
 *(Note: If you downloaded the project zip as `bangalore_aq_app`, simply navigate into that folder instead: `cd bangalore_aq_app`)*
 
@@ -307,11 +307,11 @@ tensorflow==2.16.1
 ---
 
 ## Authors
-
+> Chinmaya Holla and Chandana Shree Tulasi M N
 > **8th Semester B.E. Project**
-> Department of Computer Science & Engineering
+> Department of Information Science and Engineering
 > Spatio-Temporal Analysis and Prediction of Air Quality in Bengaluru
 
 ---
 
-*Built with ❤️ using FastAPI + React + TensorFlow*
+*Built with using FastAPI + React + TensorFlow*

@@ -19,6 +19,21 @@ FEATURES = [
 TARGET  = "PM2_5_AQI"
 SEQ_LEN = 14
 
+# Pollutants available for multi-pollutant analytics
+POLLUTANTS = {
+    "PM2_5_AQI": "PM2_5_AQI",
+    "SO2_AQI":   "SO2_AQI",
+    "NO2_AQI":   "NO2_AQI",
+}
+DEFAULT_POLLUTANT = "PM2_5_AQI"
+
+
+def resolve_pollutant(p: str | None) -> str:
+    """Validate and resolve a pollutant key to its DataFrame column name."""
+    if p and p in POLLUTANTS:
+        return POLLUTANTS[p]
+    return DEFAULT_POLLUTANT
+
 STATION_COORDS = {
     "Peenya":           [13.0283, 77.5193],
     "Silkboard":        [12.9171, 77.6220],
@@ -36,7 +51,7 @@ ZONE_TYPES = {
     "BapujiNagar": "Mixed",  "BTM": "Residential",
     "Hebbal": "Traffic",     "Hombegowda": "Residential",
     "Jayanagar": "Residential", "Kadabasenahalli": "Mixed",
-    "RVCE": "Academic",
+    "RVCE": "Traffic Hub",
 }
 
 MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]

@@ -13,9 +13,9 @@ export const STATIONS = [
 export const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
 
 export const POLLUTANT_OPTIONS = [
-  { value: 'PM2_5_AQI', label: 'PM2.5 AQI', unit: 'AQI', color: '#00c8ff' },
-  { value: 'SO2_AQI',   label: 'SO₂ AQI',   unit: 'AQI', color: '#b06dff' },
-  { value: 'NO2_AQI',   label: 'NO₂ AQI',   unit: 'AQI', color: '#ff6b2b' },
+  { value: 'PM2_5_AQI', label: 'PM2.5 sub-index AQI', unit: 'AQI', color: '#00c8ff' },
+  { value: 'SO2_AQI',   label: 'SO₂ sub-index AQI',   unit: 'AQI', color: '#b06dff' },
+  { value: 'NO2_AQI',   label: 'NO₂ sub-index AQI',   unit: 'AQI', color: '#ff6b2b' },
 ]
 
 export function pollutantColor(key) {

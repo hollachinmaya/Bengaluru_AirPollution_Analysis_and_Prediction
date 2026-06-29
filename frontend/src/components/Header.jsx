@@ -77,20 +77,6 @@ export default function Header() {
 
         <div style={{ width: 1, height: 28, background: 'rgba(52,211,120,0.12)' }} />
 
-        {/* Live badge */}
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 7,
-          fontSize: 10, color: '#34d378',
-          background: 'rgba(52,211,120,0.07)',
-          border: '1px solid rgba(52,211,120,0.20)',
-          padding: '6px 13px', borderRadius: 20,
-          fontFamily: 'Space Mono, monospace',
-          letterSpacing: 1,
-          boxShadow: '0 0 12px rgba(52,211,120,0.08)',
-        }}>
-          <Activity size={11} />
-          LIVE
-        </div>
 
         {/* Bangalore badge */}
         <div style={{

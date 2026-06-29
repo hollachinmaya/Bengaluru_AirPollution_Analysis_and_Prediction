@@ -66,19 +66,44 @@ function BangaloreMap({ hotspots, pColor }) {
           <feGaussianBlur stdDeviation="3" result="b" />
           <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
         </filter>
-        <radialGradient id="bgGrad"><stop offset="0%" stopColor="rgba(0,200,255,0.04)" /><stop offset="100%" stopColor="transparent" /></radialGradient>
+        <radialGradient id="bgGrad"><stop offset="0%" stopColor="rgba(0,200,255,0.05)" /><stop offset="100%" stopColor="transparent" /></radialGradient>
+        <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+          <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.02)" strokeWidth="1"/>
+        </pattern>
+        <pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse">
+          <circle cx="2" cy="2" r="1" fill="rgba(0,200,255,0.1)" />
+        </pattern>
       </defs>
+      
+      {/* Base Layer */}
       <rect width={W} height={H} fill="var(--surface2)" rx="10" />
-      <ellipse cx={W/2} cy={H/2} rx={200} ry={160} fill="url(#bgGrad)" />
-      {/* City boundary */}
-      <path d="M 60 340 Q 110 310 140 270 Q 170 230 240 200 Q 310 170 370 180 Q 430 195 450 240 Q 460 290 430 335 Q 400 375 330 385 Q 250 395 170 380 Q 100 365 60 340 Z"
-        fill="rgba(0,200,255,0.03)" stroke="rgba(0,200,255,0.13)" strokeWidth="1.5" strokeDasharray="6,3" />
-      {/* Roads */}
-      <line x1="50" y1="190" x2="460" y2="190" stroke="rgba(255,255,255,0.04)" strokeWidth="2" />
-      <line x1="250" y1="30"  x2="250" y2="365" stroke="rgba(255,255,255,0.04)" strokeWidth="2" />
+      <rect width={W} height={H} fill="url(#grid)" rx="10" />
+      
+      {/* Central Glow & Dots */}
+      <ellipse cx={W/2} cy={H/2} rx={220} ry={180} fill="url(#bgGrad)" />
+      <ellipse cx={W/2} cy={H/2} rx={200} ry={160} fill="url(#dots)" />
+
+      {/* Radar Rings & Axes */}
+      <g stroke="rgba(0,200,255,0.06)" strokeWidth="1" fill="none">
+        <circle cx={W/2} cy={H/2} r={60} />
+        <circle cx={W/2} cy={H/2} r={120} strokeDasharray="4 4" />
+        <circle cx={W/2} cy={H/2} r={180} />
+        <circle cx={W/2} cy={H/2} r={240} strokeDasharray="1 8" strokeWidth="2" strokeLinecap="round" />
+        
+        {/* Crosshairs */}
+        <line x1={W/2} y1="20" x2={W/2} y2={H-20} />
+        <line x1="20" y1={H/2} x2={W-20} y2={H/2} />
+      </g>
+      
+      {/* Coordinate Labels */}
+      <text x={W/2 + 6} y="30" fill="rgba(0,200,255,0.3)" fontSize="9" fontFamily="Space Mono">N 13.08°</text>
+      <text x={W - 45} y={H/2 - 6} fill="rgba(0,200,255,0.3)" fontSize="9" fontFamily="Space Mono">E 77.72°</text>
+
       {/* North indicator */}
-      <text x="468" y="52" fill="rgba(0,200,255,0.6)" fontSize="12" fontFamily="Space Mono">N</text>
-      <polygon points="472,35 468,46 476,46" fill="rgba(0,200,255,0.5)" />
+      <g transform="translate(460, 20)">
+        <polygon points="10,0 15,15 10,12 5,15" fill="rgba(0,200,255,0.5)" />
+        <text x="10" y="26" fill="rgba(0,200,255,0.5)" fontSize="10" fontFamily="Space Mono" textAnchor="middle">N</text>
+      </g>
       {hotspots.map(h => {
         const x = toX(h.lon), y = toY(h.lat)
         const r = 10 + Math.max(0, (h.mean_aqi - 20) / 4)

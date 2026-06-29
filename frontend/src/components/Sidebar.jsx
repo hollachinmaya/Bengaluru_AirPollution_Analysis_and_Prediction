@@ -84,21 +84,6 @@ export default function Sidebar() {
           </div>
         </div>
 
-        {/* Live indicator bar */}
-        <div style={{
-          marginTop: 14, padding: '6px 10px', borderRadius: 8,
-          background: 'rgba(52,211,120,0.06)', border: '1px solid rgba(52,211,120,0.15)',
-          display: 'flex', alignItems: 'center', gap: 7,
-        }}>
-          <div style={{
-            width: 6, height: 6, borderRadius: '50%',
-            background: '#34d378',
-            boxShadow: '0 0 8px #34d378',
-          }} className="animate-pulse-dot" />
-          <span style={{ fontSize: 9, color: '#34d378', fontFamily: 'Space Mono, monospace', letterSpacing: 1 }}>
-            LIVE · 9 SENSORS ACTIVE
-          </span>
-        </div>
       </div>
 
       {/* Nav label */}

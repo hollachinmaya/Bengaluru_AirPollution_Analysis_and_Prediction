@@ -18,7 +18,7 @@ const TIP = ({ active, payload, label }) => {
       <div style={{ color: 'var(--text2)', marginBottom: 4 }}>{label}</div>
       {payload.map((p, i) => (
         <div key={i} style={{ color: p.color || 'var(--accent)', fontFamily: 'Space Mono, monospace' }}>
-          {p.name}: <b>{typeof p.value === 'number' ? p.value.toFixed(2) : p.value}</b>
+          {p.name}: <b>{typeof p.value === 'number' ? (p.value < 1 ? p.value.toFixed(4) : p.value.toFixed(1)) : p.value}</b>
         </div>
       ))}
     </div>
@@ -101,7 +101,7 @@ export default function Prediction() {
   return (
     <div className="fade-in" style={{ padding: 28, maxWidth: 1400 }}>
       <SectionHeader tag="CNN-LSTM PREDICTION ENGINE" title="Deep Learning Forecast"
-        desc="Hybrid CNN-LSTM model trained on 7-day lookback windows. Conv1D layers capture local temporal patterns; dense layers output next-day AQI." />
+        desc="Hybrid CNN-LSTM model trained on 14-day lookback windows. Conv1D layers capture local patterns, LSTM layers track temporal memory, and dense layers output next-day AQI." />
 
       {/* Architecture */}
       <Card style={{ marginBottom: 18 }}>
@@ -194,8 +194,8 @@ export default function Prediction() {
               <ResponsiveContainer width="100%" height={260}>
                 <ScatterChart>
                   <CartesianGrid stroke="rgba(0,200,255,0.05)" />
-                  <XAxis dataKey="actual"    name="Actual"    tick={{ fill: 'var(--text2)', fontSize: 11 }} label={{ value: 'Actual AQI',    fill: 'var(--text2)', fontSize: 11, position: 'insideBottom', offset: -5 }} />
-                  <YAxis dataKey="predicted" name="Predicted" tick={{ fill: 'var(--text2)', fontSize: 11 }} label={{ value: 'Predicted AQI', fill: 'var(--text2)', fontSize: 11, angle: -90, position: 'insideLeft' }} />
+                  <XAxis type="number" dataKey="actual"    name="Actual"    tick={{ fill: 'var(--text2)', fontSize: 11 }} label={{ value: 'Actual AQI',    fill: 'var(--text2)', fontSize: 11, position: 'insideBottom', offset: -5 }} />
+                  <YAxis type="number" dataKey="predicted" name="Predicted" tick={{ fill: 'var(--text2)', fontSize: 11 }} label={{ value: 'Predicted AQI', fill: 'var(--text2)', fontSize: 11, angle: -90, position: 'insideLeft' }} />
                   <Tooltip cursor={{ strokeDasharray: '3 3' }} content={<TIP />} />
                   <Scatter name="CNN-LSTM" data={scatterData} fill="rgba(0,200,255,0.4)" />
                   <Line type="linear" data={perfectLine} dataKey="predicted" stroke="rgba(255,107,43,0.6)" strokeWidth={1.5} strokeDasharray="6,3" dot={false} name="Perfect Fit" />
@@ -210,12 +210,10 @@ export default function Prediction() {
                 {data.architecture?.features?.map((name) => (
                   <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div style={{ fontSize: 11, color: 'var(--text2)', flex: 1, fontFamily: 'Space Mono, monospace' }}>{name}</div>
-                    <div style={{ fontSize: 10, color: 'var(--accent)', background: 'rgba(0,200,255,0.08)', borderRadius: 4, padding: '2px 8px' }}>active</div>
                   </div>
                 )) || FEATURES?.map(name => (
                   <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div style={{ fontSize: 11, color: 'var(--text2)', flex: 1, fontFamily: 'Space Mono, monospace' }}>{name}</div>
-                    <div style={{ fontSize: 10, color: 'var(--accent)', background: 'rgba(0,200,255,0.08)', borderRadius: 4, padding: '2px 8px' }}>active</div>
                   </div>
                 ))}
               </div>

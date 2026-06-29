@@ -123,9 +123,11 @@ export function StatCard({ icon, value, label, sub, accent }) {
       <div style={{ fontSize: 20, marginBottom: 10 }}>{icon}</div>
       <div style={{
         fontFamily: 'Rajdhani, Space Mono, monospace',
-        fontSize: 28, fontWeight: 700, color: a,
+        fontSize: String(value).length > 12 ? 18 : String(value).length > 8 ? 20 : 28, 
+        fontWeight: 700, color: a,
         lineHeight: 1, letterSpacing: -0.5,
         textShadow: `0 0 20px ${a}60`,
+        wordBreak: 'break-word'
       }}>
         {value}
       </div>
